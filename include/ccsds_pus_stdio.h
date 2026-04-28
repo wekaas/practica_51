@@ -2,6 +2,7 @@
 #define INCLUDE_CCSDS_PUS_STDIO_H_
 
 #include "basic_types.h"
+#include "ccsds_pus_format.h"
 
 /**
  * \brief Print packet header fields
@@ -23,8 +24,7 @@ void ccsds_pus_tmtc_print_packet_seq_ctrl_fields(uint16_t tc_packet_seq_ctrl);
  *
  * \param tc_df_header telecommand data field header
  */
-// TODO: Declare function ccsds_pus_tc_print_df_header_fields
-void ccsds_pus_tc_print_df_header_fields(uint32_t tc_df_header);
+void ccsds_pus_tc_print_df_header_fields(struct ccsds_pus_tc_df_header tc_df_header);
 
 /**
  * \brief Reads a telecommand from a file

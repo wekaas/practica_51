@@ -8,21 +8,23 @@ void epd_pus_build_tm_1_1(uint8_t tm_bytes[],
                           uint16_t tc_packet_id,
                           uint16_t tc_packet_seq_ctrl) {
 
-    uint16_t packet_id;
-    uint16_t packet_seq_ctrl;
-    uint16_t packet_length;
-    uint32_t df_header;
 
-    packet_id = ccsds_pus_tm_build_packet_id(EPD_APID);
+    struct ccsds_pus_tmtc_packet_header tm_packet_header;
+    struct ccsds_pus_tm_df_header df_header;
 
-    packet_seq_ctrl = ccsds_pus_tm_build_packet_seq_ctrl(0x3, tm_seq_counter);
+    tm_packet_header.packet_id = ccsds_pus_tm_build_packet_id(EPD_APID);
 
-    packet_length = 0x07;
+    tm_packet_header.packet_seq_ctrl = ccsds_pus_tm_build_packet_seq_ctrl(0x3,
+            tm_seq_counter);
 
-    df_header = ccsds_pus_tm_build_df_header(1, 1, EPD_DESTINATION_ID);
+    tm_packet_header.packet_length = 0x07;
 
-    ccsds_pus_tm_set_fields(&tm_bytes[0], packet_id,
-                            packet_seq_ctrl, packet_length, df_header);
+    df_header.version = ccsds_pus_tm_build_df_header_version(0x1);
+    df_header.type = 1;
+    df_header.subtype = 1;
+    df_header.destinationID = EPD_DESTINATION_ID;
+
+    ccsds_pus_tm_set_fields(&tm_bytes[0], &tm_packet_header, &df_header);
 
     serialize_uint16(tc_packet_id, &tm_bytes[10]);
     serialize_uint16(tc_packet_seq_ctrl, &tm_bytes[12]);
@@ -31,8 +33,6 @@ void epd_pus_build_tm_1_1(uint8_t tm_bytes[],
 
 }
 
-// TODO: Define function epd_pus_build_tm_1_2_crc_error
-
 void epd_pus_build_tm_1_2_crc_error(uint8_t tm_bytes[],
 									uint16_t tm_seq_counter,
 									uint16_t tc_packet_id,
@@ -40,21 +40,23 @@ void epd_pus_build_tm_1_2_crc_error(uint8_t tm_bytes[],
 									uint16_t tc_packet_err_ctrl,
 									uint16_t calculated_crc){
 
-    uint16_t packet_id;
-    uint16_t packet_seq_ctrl;
-    uint16_t packet_length;
-    uint32_t df_header;
 
-    packet_id = ccsds_pus_tm_build_packet_id(EPD_APID);
+    struct ccsds_pus_tmtc_packet_header tm_packet_header;
+    struct ccsds_pus_tm_df_header df_header;
 
-    packet_seq_ctrl = ccsds_pus_tm_build_packet_seq_ctrl(0x3, tm_seq_counter);
+    tm_packet_header.packet_id = ccsds_pus_tm_build_packet_id(EPD_APID);
 
-    packet_length = 0x0D;
+    tm_packet_header.packet_seq_ctrl = ccsds_pus_tm_build_packet_seq_ctrl(0x3,
+            tm_seq_counter);
 
-    df_header = ccsds_pus_tm_build_df_header(1, 2, EPD_DESTINATION_ID);
+    tm_packet_header.packet_length = 0x0D;
 
-    ccsds_pus_tm_set_fields(&tm_bytes[0], packet_id,
-                            packet_seq_ctrl, packet_length, df_header);
+    df_header.version = ccsds_pus_tm_build_df_header_version(0x1);
+    df_header.type = 1;
+    df_header.subtype = 2;
+    df_header.destinationID = EPD_DESTINATION_ID;
+
+    ccsds_pus_tm_set_fields(&tm_bytes[0], &tm_packet_header, &df_header);
 
     serialize_uint16(tc_packet_id, &tm_bytes[10]);
     serialize_uint16(tc_packet_seq_ctrl, &tm_bytes[12]);
@@ -63,6 +65,7 @@ void epd_pus_build_tm_1_2_crc_error(uint8_t tm_bytes[],
     serialize_uint16(calculated_crc, &tm_bytes[18]);
 
     return;
+
 }
 
 

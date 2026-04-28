@@ -27,10 +27,9 @@ int main() {
 	uint16_t tm_count = 0;
 	for (uint8_t tc = 0; tc < ntcs; tc = tc + 1) {
 
-	    uint16_t tc_packet_id;
-	    uint16_t tc_packet_seq_ctrl;
-	    uint16_t tc_packet_len;
-	    uint32_t tc_df_header;
+	    struct ccsds_pus_tmtc_packet_header tc_packet_header;
+	    struct ccsds_pus_tc_df_header tc_df_header;
+
 	    uint16_t tc_packet_err_ctrl;
 
 	    uint16_t crc_value;
@@ -43,15 +42,14 @@ int main() {
 	    nbytes = ccsds_pus_tc_read(tc_fd, tc_bytes);
 
 	    // Deserialize primary fields
-	    ccsds_pus_tc_get_fields(tc_bytes, &tc_packet_id,
-	            &tc_packet_seq_ctrl,
-	            &tc_packet_len,
+	    ccsds_pus_tc_get_fields(tc_bytes, &tc_packet_header,
 	            &tc_df_header,
 	            &tc_packet_err_ctrl);
 
 	    // Print the contents of all the fields
-	    ccsds_pus_tmtc_print_packet_header_fields(tc_packet_id);
-	    ccsds_pus_tmtc_print_packet_seq_ctrl_fields(tc_packet_seq_ctrl);
+	    ccsds_pus_tmtc_print_packet_header_fields(tc_packet_header.packet_id);
+	    ccsds_pus_tmtc_print_packet_seq_ctrl_fields(
+	            tc_packet_header.packet_seq_ctrl);
 	    ccsds_pus_tc_print_df_header_fields(tc_df_header);
 
 	    // Calculate CRC
@@ -62,28 +60,29 @@ int main() {
 	    if (crc_value == tc_packet_err_ctrl) {
 
 	        printf("Expected CRC value 0x%X, Calculated CRC value 0x%X: OK\n",
-	               tc_packet_err_ctrl, crc_value);
+	                tc_packet_err_ctrl, crc_value);
 
 	        // Generate TM (1,1) - Accept
 	        epd_pus_build_tm_1_1(tm_bytes, tm_count,
-	                             tc_packet_id, tc_packet_seq_ctrl);
+	                tc_packet_header.packet_id,
+	                tc_packet_header.packet_seq_ctrl);
 
 	    } else {
 	        printf("Expected CRC value 0x%X, Calculated CRC value 0x%X: FAIL\n",
-	               tc_packet_err_ctrl, crc_value);
+	                tc_packet_err_ctrl, crc_value);
 
 	        // Generate TM (1,2) - Reject
 	        epd_pus_build_tm_1_2_crc_error(tm_bytes, tm_count,
-	                                       tc_packet_id, tc_packet_seq_ctrl,
-	                                       tc_packet_err_ctrl, crc_value);
+	                tc_packet_header.packet_id,
+	                tc_packet_header.packet_seq_ctrl,
+	                tc_packet_err_ctrl, crc_value);
 	    }
 
 	    ccsds_pus_tm_write(tm_fd, tm_bytes);
 
 	    tm_count = tm_count + 1;
 
-
-}
+	}
 
 
 		close(tc_fd);
